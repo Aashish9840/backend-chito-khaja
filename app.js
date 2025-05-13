@@ -1,6 +1,7 @@
 const express = require("express");
 require("dotenv").config();
 const cors = require("cors");
+const cookie_parser = require("cookie-parser");
 const connectMongo = require("./configuration/mongoDBConnection");
 const foodRouter = require("./routes/foodRoutes");
 const userRouter = require("./routes/userRoute");
@@ -11,6 +12,7 @@ const app = express();
 
 connectMongo();
 //middleware
+app.use(cookie_parser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
@@ -20,7 +22,7 @@ app.use("/api/food", foodRouter);
 
 // end point for user Model
 
-app.use("api/user", userRouter);
+app.use("/api/user", userRouter);
 // access image
 app.use("/images", express.static("uploads"));
 

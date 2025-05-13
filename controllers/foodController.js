@@ -71,9 +71,41 @@ exports.deleteFoodItem = async (req, res) => {
 
 exports.updateFoodItem = async (req, res) => {
   try {
-    const { name, description, category, prize } = req.body;
+    const { id, name, description, category, prize } = req.body;
+    const newImage = req.file ? req.file.filename : null;
+    if (!id) {
+      return res.json({
+        success: false,
+        message: "Id is required for updating the food item",
+      });
+    }
 
-    if (name || !description || !category || !prize) {
+    if (name || description || category || prize) {
+      const food = await foodModel.findById(id);
+
+      if (!food) {
+        return res.json({ success: false, message: "No food Item is found" });
+      }
+
+      if (name) food.name = name;
+      if (description) food.description = description;
+      if (category) food.category = category;
+      if (prize) food.prize = prize;
+
+      if (newImage) {
+        fs.unlink(`uploads/${food.image}`, () => {});
+        food.image = newImage;
+      }
+      await food.save();
+      return res.json({
+        success: true,
+        message: "Food Details is Updated Successfully",
+      });
+    } else {
+      return res.json({
+        success: false,
+        message: "Required food items data to update it",
+      });
     }
   } catch (error) {
     res.json({ message: error.message });

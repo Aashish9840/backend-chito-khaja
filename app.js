@@ -1,7 +1,6 @@
 const express = require("express");
 require("dotenv").config();
 const cors = require("cors");
-const body_parser = require("body-parser");
 const connectMongo = require("./configuration/mongoDBConnection");
 const foodRouter = require("./routes/foodRoutes");
 
@@ -13,10 +12,13 @@ connectMongo();
 //middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors);
+app.use(cors());
 
 //api-end-point
 app.use("/api/food", foodRouter);
+
+// access image
+app.use("/images", express.static("uploads"));
 
 const Port = process.env.APP_PORT || 4000;
 app.listen(Port, () => {

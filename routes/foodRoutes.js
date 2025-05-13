@@ -12,5 +12,7 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 foodRouter.post("/add", upload.single("image"), foodController.addFoodItem);
+foodRouter.get("/list", foodController.listfood);
+foodRouter.delete("/delete/:id", foodController.deleteFoodItem);
 
 module.exports = foodRouter;

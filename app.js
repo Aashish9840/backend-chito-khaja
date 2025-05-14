@@ -5,6 +5,7 @@ const cookie_parser = require("cookie-parser");
 const connectMongo = require("./configuration/mongoDBConnection");
 const foodRouter = require("./routes/foodRoutes");
 const userRouter = require("./routes/userRoute");
+const cartRouter = require("./routes/cartRouter");
 
 const app = express();
 
@@ -21,8 +22,12 @@ app.use(cors());
 app.use("/api/food", foodRouter);
 
 // end point for user Model
-
 app.use("/api/user", userRouter);
+
+// cart details api
+
+app.use("/api/cart", cartRouter);
+
 // access image
 app.use("/images", express.static("uploads"));
 

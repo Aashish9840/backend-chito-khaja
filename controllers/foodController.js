@@ -21,7 +21,7 @@ exports.addFoodItem = async (req, res) => {
       prize,
     });
     await food.save();
-    return res.json({
+    return res.status(200).json({
       success: true,
       message: "New food item is successfully created",
     });
@@ -33,7 +33,7 @@ exports.addFoodItem = async (req, res) => {
 exports.listfood = async (req, res) => {
   try {
     const food = await foodModel.find({});
-    return res.json({ success: true, data: food });
+    return res.status(200).json({ success: true, data: food });
   } catch (error) {
     res.json({ message: error.message });
   }
@@ -41,9 +41,8 @@ exports.listfood = async (req, res) => {
 
 exports.deleteFoodItem = async (req, res) => {
   const id = req.params.id;
-  console.log("id", id);
   if (!id) {
-    return res.json({
+    return res.status(400).json({
       success: false,
       message: "Food id is required to delete the food.",
     });
@@ -52,7 +51,9 @@ exports.deleteFoodItem = async (req, res) => {
     const food = await foodModel.findById(id);
 
     if (!food) {
-      return res.json({ success: false, message: "Food Item doesnot found" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Food Item doesnot found" });
     }
     fs.unlink(`uploads/${food.image}`, (err) => {
       if (err) {
@@ -74,7 +75,7 @@ exports.updateFoodItem = async (req, res) => {
     const { id, name, description, category, prize } = req.body;
     const newImage = req.file ? req.file.filename : null;
     if (!id) {
-      return res.json({
+      return res.status(400).json({
         success: false,
         message: "Id is required for updating the food item",
       });
@@ -84,7 +85,9 @@ exports.updateFoodItem = async (req, res) => {
       const food = await foodModel.findById(id);
 
       if (!food) {
-        return res.json({ success: false, message: "No food Item is found" });
+        return res
+          .status(400)
+          .json({ success: false, message: "No food Item is found" });
       }
 
       if (name) food.name = name;
@@ -102,7 +105,7 @@ exports.updateFoodItem = async (req, res) => {
         message: "Food Details is Updated Successfully",
       });
     } else {
-      return res.json({
+      return res.status(400).json({
         success: false,
         message: "Required food items data to update it",
       });

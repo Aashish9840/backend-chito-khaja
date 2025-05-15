@@ -6,6 +6,7 @@ const connectMongo = require("./configuration/mongoDBConnection");
 const foodRouter = require("./routes/foodRoutes");
 const userRouter = require("./routes/userRoute");
 const cartRouter = require("./routes/cartRouter");
+const orderRouter = require("./routes/orderRoute");
 
 const app = express();
 
@@ -28,6 +29,9 @@ app.use("/api/user", userRouter);
 
 app.use("/api/cart", cartRouter);
 
+// order Router api
+
+app.use("/api/order", orderRouter);
 // access image
 app.use("/images", express.static("uploads"));
 

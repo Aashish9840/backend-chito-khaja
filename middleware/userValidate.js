@@ -11,6 +11,7 @@ const userValidate = async (req, res, next) => {
 
     const users = await userModel.findById(decodeToken?.id);
     if (decodeToken.id && users) {
+      req.user = users;
       req.body = req.body || {};
       req.body.userId = decodeToken.id;
       next();
@@ -21,4 +22,15 @@ const userValidate = async (req, res, next) => {
     return res.status(400).json({ message: error.message });
   }
 };
-module.exports = userValidate;
+
+const isAdmin = (req, res, next) => {
+  if (req.user?.role !== "admin") {
+    return res.status(403).json({ message: "Access denied: Admins only" });
+  }
+  next();
+};
+
+module.exports = {
+  userValidate,
+  isAdmin,
+};

@@ -4,8 +4,8 @@ const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
 // token creation
-const tokenFunction = (id) => {
-  const token = jwt.sign({ id }, process.env.SECRET_KEY, {
+const tokenFunction = (id, role) => {
+  const token = jwt.sign({ id, role }, process.env.SECRET_KEY, {
     expiresIn: "2d",
   });
   return token;
@@ -61,7 +61,7 @@ exports.login = async (req, res) => {
     if (!isMatch) {
       return res.status(400).json({ message: "Password doesnot match" });
     }
-    const token = tokenFunction(user._id);
+    const token = tokenFunction(user._id, user.role);
     res.cookie("token", token, {
       httpOnly: true,
       secure: false,
@@ -84,5 +84,45 @@ exports.logout = async (req, res) => {
     return res.status(200).json({ message: "User logout Successfully" });
   } catch (error) {
     return res.status(400).json({ message: error.message });
+  }
+};
+
+// admin login
+exports.adminLogin = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    console.log(email, password);
+    const user = await userModel.findOne({ email });
+    if (!user || user.role !== "admin") {
+      return res.status(403).json({ message: "Access denied: Admins only" });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+
+    const token = tokenFunction(user._id, user.role);
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: false,
+      sameSite: "Strict",
+      maxAge: 2 * 24 * 60 * 60 * 1000,
+    });
+
+    return res.status(200).json({ message: "Admin login successful" });
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+};
+
+// get all the users
+exports.getAllUsers = async (req, res) => {
+  try {
+    const users = await userModel.find({ role: "user" }).select("-password");
+    res.status(200).json({ users });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 };

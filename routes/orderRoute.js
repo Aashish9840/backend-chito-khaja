@@ -2,7 +2,7 @@ const express = require("express");
 const orderRouter = express.Router();
 
 const orderController = require("../controllers/orderController");
-const userValidate = require("../middleware/userValidate");
+const { userValidate } = require("../middleware/userValidate");
 
 orderRouter.post("/placeOrder", userValidate, orderController.placeOrder);
 orderRouter.get("/userOrder", userValidate, orderController.userOrder);

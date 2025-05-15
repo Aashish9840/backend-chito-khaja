@@ -7,6 +7,7 @@ const foodRouter = require("./routes/foodRoutes");
 const userRouter = require("./routes/userRoute");
 const cartRouter = require("./routes/cartRouter");
 const orderRouter = require("./routes/orderRoute");
+const adminRoute = require("./routes/adminRoute");
 
 const app = express();
 
@@ -25,6 +26,9 @@ app.use("/api/food", foodRouter);
 // end point for user Model
 app.use("/api/user", userRouter);
 
+// end point for admin model
+
+app.use("/api/admin", adminRoute);
 // cart details api
 
 app.use("/api/cart", cartRouter);

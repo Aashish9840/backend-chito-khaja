@@ -5,6 +5,8 @@ const orderController = require("../controllers/orderController");
 const userValidate = require("../middleware/userValidate");
 
 orderRouter.post("/placeOrder", userValidate, orderController.placeOrder);
-orderRouter.post("/getOrder", userValidate, orderController.getOrder);
+orderRouter.get("/userOrder", userValidate, orderController.userOrder);
+orderRouter.get("/getOrder", orderController.getOrder);
+orderRouter.put("/updateStatus", orderController.updateStatus);
 
 module.exports = orderRouter;

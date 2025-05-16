@@ -95,7 +95,7 @@ exports.adminLogin = async (req, res) => {
     console.log(email, password);
     const user = await userModel.findOne({ email });
     if (!user || user.role !== "admin") {
-      return res.status(403).json({ message: "Access denied: Admins only" });
+      return res.status(403).json({ message: "Access denied: Email Invalid" });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
@@ -124,5 +124,20 @@ exports.getAllUsers = async (req, res) => {
     res.status(200).json({ users });
   } catch (err) {
     res.status(500).json({ message: err.message });
+  }
+};
+
+// admin or user validate
+
+exports.isAuth = async (req, res) => {
+  try {
+    const { userId } = req.body;
+    const user = await userModel.findById(userId);
+    if (!user) {
+      return res.status(400).json({ message: "User is not found" });
+    }
+    return res.status(200).json({ success: true, data: user });
+  } catch (error) {
+    return res.status(200).json({ message: error.message });
   }
 };

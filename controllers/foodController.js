@@ -1,5 +1,8 @@
 const foodModel = require("../models/food_model");
-const fs = require("fs"); // Node.js module to interact with the file system
+const fs = require("fs");
+const bcrypt = require("bcrypt");
+const userModel = require("../models/userModel");
+
 exports.addFoodItem = async (req, res) => {
   let image_filename = `${req.file.filename}`;
   const { name, description, category, prize } = req.body;
@@ -41,15 +44,30 @@ exports.listfood = async (req, res) => {
 
 exports.deleteFoodItem = async (req, res) => {
   const id = req.params.id;
+  const { userId, password } = req.body;
+  if (!userId) {
+    return res.status(400).json({ message: "Admin is allowed to delete food" });
+  }
+
   if (!id) {
     return res.status(400).json({
       success: false,
       message: "Food id is required to delete the food.",
     });
   }
+  if (!password) {
+    return res.status(400).json({ message: "Password is required !" });
+  }
   try {
-    const food = await foodModel.findById(id);
+    const user = await userModel.findById(userId);
+    const isMatch = await bcrypt.compare(password, user.password);
 
+    if (!isMatch) {
+      return res
+        .status(400)
+        .json({ message: "Admin password credentials wrong" });
+    }
+    const food = await foodModel.findById(id);
     if (!food) {
       return res
         .status(400)

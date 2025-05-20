@@ -22,5 +22,10 @@ adminRoute.get(
 );
 
 adminRoute.put("/update-info", userValidate, userController.updateUserDetails);
+adminRoute.post(
+  "/update-password",
+  userValidate,
+  userController.changePassword
+);
 
 module.exports = adminRoute;

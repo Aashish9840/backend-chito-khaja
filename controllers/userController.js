@@ -213,6 +213,42 @@ exports.roleUpdate = async (req, res) => {
   }
 };
 
+//change password
+
+exports.changePassword = async (req, res) => {
+  try {
+    const { userId, password, newPassword, confirmPassword } = req.body;
+    console.log(password, newPassword, confirmPassword);
+    console.log(req.body);
+    if (!newPassword || !confirmPassword || !password) {
+      return res
+        .status(400)
+        .json({ message: "All passwords field are required" });
+    }
+
+    if (newPassword !== confirmPassword) {
+      return res
+        .status(400)
+        .json({ message: "Newpassword and Confirm password must be same" });
+    }
+    const user = await userModel.findById(userId);
+    if (!user) {
+      return res.status(400).json({ message: "User is not found!" });
+    }
+
+    const isMatch = await bcrypt.compare(user.password, password);
+    if (!isMatch) {
+      return res.status(400).status({ message: "Password is wrong" });
+    }
+
+    user.password = newPassword;
+    await user.save();
+    return res.status(200).json({ message: "Password Updated Successfully!" });
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
+  }
+};
+
 // Update user details
 
 exports.updateUserDetails = async (req, res) => {
@@ -244,7 +280,7 @@ exports.updateUserDetails = async (req, res) => {
     });
 
     return res
-      .status(400)
+      .status(200)
       .json({ message: "Updated Information successfully" });
   } catch (error) {
     return res.status(400).json({ message: error.message });

@@ -13,4 +13,14 @@ adminRoute.delete(
   userController.deleteUser
 );
 
+adminRoute.put("/update-role", userController.roleUpdate);
+adminRoute.get("/logout", userValidate, userController.logout);
+adminRoute.get(
+  "/userInformation",
+  userValidate,
+  userController.userInformation
+);
+
+adminRoute.put("/update-info", userValidate, userController.updateUserDetails);
+
 module.exports = adminRoute;

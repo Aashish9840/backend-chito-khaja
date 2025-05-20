@@ -14,6 +14,7 @@ const userValidate = async (req, res, next) => {
       req.user = users;
       req.body = req.body || {};
       req.body.userId = decodeToken.id;
+      req.body.role = decodeToken.role;
       next();
     } else {
       return res.status(400).json({ message: "Not authorized. Login Again" });
@@ -22,7 +23,6 @@ const userValidate = async (req, res, next) => {
     return res.status(400).json({ message: error.message });
   }
 };
-
 
 const isAdmin = (req, res, next) => {
   if (req.user?.role !== "admin") {

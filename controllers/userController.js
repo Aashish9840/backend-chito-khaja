@@ -75,13 +75,14 @@ exports.login = async (req, res) => {
 };
 
 exports.logout = async (req, res) => {
+  const { role } = req.body;
   try {
     res.clearCookie("token", {
       httpOnly: true,
       secure: false,
       sameSite: "Strict",
     });
-    return res.status(200).json({ message: "User logout Successfully" });
+    return res.status(200).json({ message: `${role} logout Successfully` });
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }
@@ -103,8 +104,10 @@ exports.deleteUser = async (req, res) => {
     if (!user) {
       return res.status(400).json({ message: "User is not found" });
     }
-    if (user.role === "admin") {
-      return res.status(400).json({ message: "Admin user can't be deleted" });
+    if (user.role === "admin" || user.role == "staff") {
+      return res
+        .status(400)
+        .json({ message: "Admin or Staff user can't be deleted" });
     }
     const adminUser = await userModel.findById(userId);
 
@@ -125,18 +128,17 @@ exports.deleteUser = async (req, res) => {
 exports.adminLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
-
-    console.log(email, password);
     const user = await userModel.findOne({ email });
-    if (!user || user.role !== "admin") {
-      return res.status(403).json({ message: "Access denied: Email Invalid" });
+    if (!user || (user.role !== "admin" && user.role !== "staff")) {
+      return res
+        .status(400)
+        .json({ message: "Access denied: Admin and Stafft is allowed" });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
-
     const token = tokenFunction(user._id, user.role);
     res.cookie("token", token, {
       httpOnly: true,
@@ -144,14 +146,13 @@ exports.adminLogin = async (req, res) => {
       sameSite: "Strict",
       maxAge: 2 * 24 * 60 * 60 * 1000,
     });
-
-    return res.status(200).json({ message: "Admin login successful" });
+    return res.status(200).json({ message: `${user.role} login successful` });
   } catch (err) {
     return res.status(500).json({ message: err.message });
   }
 };
 
-// get all the users
+// get all the users at admin side
 exports.getAllUsers = async (req, res) => {
   try {
     const users = await userModel.find({}).select("-password");
@@ -173,5 +174,79 @@ exports.isAuth = async (req, res) => {
     return res.status(200).json({ success: true, data: user });
   } catch (error) {
     return res.status(200).json({ message: error.message });
+  }
+};
+
+// get users details based on id
+exports.userInformation = async (req, res) => {
+  try {
+    const { userId } = req.body;
+    if (!userId) {
+      return res.status(400).json({ message: "No id found" });
+    }
+    const user = await userModel.findById(userId).select("-password");
+    if (!user) {
+      return res.status(400).json({ message: "User doesnot exist" });
+    }
+
+    return res.status(200).json({ data: user });
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
+  }
+};
+
+exports.roleUpdate = async (req, res) => {
+  try {
+    const { updateRole, userId } = req.body;
+
+    if (!updateRole || !userId) {
+      return res.status(400).json({ message: "Update role is required" });
+    }
+    const user = await userModel.findById(userId);
+    if (user.role === "admin" || user.role === "user") {
+      return res.status(400).json({ message: `${user.role} can't be updated` });
+    }
+    await userModel.findByIdAndUpdate(userId, { role: updateRole });
+    return res.status(200).json({ message: "Role is updated" });
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
+  }
+};
+
+// Update user details
+
+exports.updateUserDetails = async (req, res) => {
+  try {
+    const {
+      userId,
+      userName,
+      address,
+      country,
+      phone,
+      date,
+      married,
+      education,
+      gender,
+    } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({ message: "User is not found" });
+    }
+    await userModel.findByIdAndUpdate(userId, {
+      userName,
+      address,
+      country,
+      phone,
+      date,
+      married,
+      education,
+      gender,
+    });
+
+    return res
+      .status(400)
+      .json({ message: "Updated Information successfully" });
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
   }
 };

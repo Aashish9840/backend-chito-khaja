@@ -92,44 +92,59 @@ exports.updateFoodItem = async (req, res) => {
   try {
     const { id, name, description, category, prize } = req.body;
     const newImage = req.file ? req.file.filename : null;
+
+    console.log(newImage, "new image");
     if (!id) {
       return res.status(400).json({
         success: false,
         message: "Id is required for updating the food item",
       });
     }
-    if (name || description || category || prize) {
-      const food = await foodModel.findById(id);
 
-      if (!food) {
-        return res
-          .status(400)
-          .json({ success: false, message: "No food Item is found" });
-      }
+    const food = await foodModel.findById(id);
 
-      if (name) food.name = name;
-      if (description) food.description = description;
-      if (category) food.category = category;
-      if (prize) food.prize = prize;
-
-      if (newImage) {
-        fs.unlink(`uploads/${food.image}`, () => {});
-        food.image = newImage;
-      }
-      await food.save();
-      return res.json({
-        success: true,
-        message: "Food Details is Updated Successfully",
-      });
-    } else {
-      return res.status(400).json({
-        success: false,
-        message: "Required food items data to update it",
-      });
+    if (!food) {
+      return res
+        .status(400)
+        .json({ success: false, message: "No food Item is found" });
     }
+
+    if (name) food.name = name;
+    if (description) food.description = description;
+    if (category) food.category = category;
+    if (prize) food.prize = prize;
+
+    if (newImage) {
+      fs.unlink(`uploads/${food.image}`, () => {});
+      food.image = newImage;
+    }
+    await food.save();
+    return res.json({
+      success: true,
+      message: "Food Details is Updated Successfully",
+    });
   } catch (error) {
-    res.json({ message: error.message });
+    res.status(400).json({ message: error.message });
   }
 };
 
 //get single food item
+
+exports.singleFood = async (req, res) => {
+  try {
+    const { foodId } = req.body;
+    if (!foodId) {
+      return res.status(400).json({ message: "Food Id is required" });
+    }
+    const food = await foodModel.findById(foodId);
+    if (!food) {
+      return res
+        .status(400)
+        .json({ message: "Food with such id doesnot exist" });
+    }
+
+    return res.status(200).json({ data: food });
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
+  }
+};

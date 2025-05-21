@@ -21,6 +21,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 app.use(cors());
 
+
 //api-end-point for food Model
 app.use("/api/food", foodRouter);
 

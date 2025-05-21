@@ -21,4 +21,6 @@ foodRouter.put(
   foodController.updateFoodItem
 );
 
+foodRouter.post("/single-food", foodController.singleFood);
+
 module.exports = foodRouter;

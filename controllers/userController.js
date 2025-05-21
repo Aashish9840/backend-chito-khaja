@@ -218,8 +218,6 @@ exports.roleUpdate = async (req, res) => {
 exports.changePassword = async (req, res) => {
   try {
     const { userId, password, newPassword, confirmPassword } = req.body;
-    console.log(password, newPassword, confirmPassword);
-    console.log(req.body);
     if (!newPassword || !confirmPassword || !password) {
       return res
         .status(400)
@@ -231,17 +229,25 @@ exports.changePassword = async (req, res) => {
         .status(400)
         .json({ message: "Newpassword and Confirm password must be same" });
     }
+
+    if (password === newPassword) {
+      return res.status(400).json({
+        message: "Current Password and New password must not be same",
+      });
+    }
     const user = await userModel.findById(userId);
     if (!user) {
       return res.status(400).json({ message: "User is not found!" });
     }
 
-    const isMatch = await bcrypt.compare(user.password, password);
+    const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).status({ message: "Password is wrong" });
+      return res.status(400).json({ message: "Current Password is wrong" });
     }
 
-    user.password = newPassword;
+    const hashpassword = await bcrypt.hash(newPassword, 15);
+
+    user.password = hashpassword;
     await user.save();
     return res.status(200).json({ message: "Password Updated Successfully!" });
   } catch (error) {

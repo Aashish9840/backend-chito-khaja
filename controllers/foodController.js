@@ -98,7 +98,6 @@ exports.updateFoodItem = async (req, res) => {
         message: "Id is required for updating the food item",
       });
     }
-
     if (name || description || category || prize) {
       const food = await foodModel.findById(id);
 
@@ -132,3 +131,5 @@ exports.updateFoodItem = async (req, res) => {
     res.json({ message: error.message });
   }
 };
+
+//get single food item

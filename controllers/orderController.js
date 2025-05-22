@@ -65,10 +65,34 @@ exports.getOrder = async (req, res) => {
 exports.updateStatus = async (req, res) => {
   try {
     const { orderId, status } = req.body;
+    if (!orderId || !status) {
+      return res.status(400).json({ message: "Order ID and Status required" });
+    }
     await orderModel.findByIdAndUpdate(orderId, { status: status });
     return res
       .status(200)
       .json({ success: true, message: "Order Status is updated" });
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
+  }
+};
+
+exports.deleteOrder = async (req, res) => {
+  try {
+    const { id, password } = req.body;
+    if (!id || !password) {
+      return res
+        .status(400)
+        .json({ message: "Order Id and password is required" });
+    }
+    const order = await orderModel.findById(id);
+    if (!order) {
+      return res.status(400).json({ message: "Order with such id not found" });
+    }
+    await orderModel.findByIdAndDelete(id);
+    return res
+      .status(200)
+      .json({ message: "User Order is deleted Successfully" });
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }

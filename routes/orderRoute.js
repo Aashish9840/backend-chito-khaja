@@ -8,5 +8,6 @@ orderRouter.post("/placeOrder", userValidate, orderController.placeOrder);
 orderRouter.get("/userOrder", userValidate, orderController.userOrder);
 orderRouter.get("/getOrder", orderController.getOrder);
 orderRouter.put("/updateStatus", orderController.updateStatus);
+orderRouter.delete("/delete", orderController.deleteOrder);
 
 module.exports = orderRouter;

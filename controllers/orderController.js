@@ -49,7 +49,7 @@ exports.userOrder = async (req, res) => {
   }
 };
 
-// all order list for admin
+// all order list for admin regarding order
 
 exports.getOrder = async (req, res) => {
   try {

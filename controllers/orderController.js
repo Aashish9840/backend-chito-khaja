@@ -3,9 +3,9 @@ const userModel = require("../models/userModel");
 
 exports.placeOrder = async (req, res) => {
   try {
-    const { userId, foodItems, amount, address } = req.body;
+    const { userId, foodItems, address } = req.body;
 
-    if (!foodItems || !amount || !address || !userId) {
+    if (!foodItems || !address || !userId) {
       return res
         .status(400)
         .json({ message: "All the order details are required" });
@@ -15,6 +15,10 @@ exports.placeOrder = async (req, res) => {
       return res.status(400).json({ message: "No user is existed" });
     }
 
+    let amount = 0;
+    foodItems.forEach((element) => {
+      amount += Number(element.amount * element.quantity);
+    });
     const order = new orderModel({
       userId,
       userName: user.userName,
@@ -93,6 +97,40 @@ exports.deleteOrder = async (req, res) => {
     return res
       .status(200)
       .json({ message: "User Order is deleted Successfully" });
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
+  }
+};
+// order reports
+exports.orderReport = async (req, res) => {
+  try {
+    const totalOrder = await orderModel.countDocuments();
+    const deliveredOrder = await orderModel.countDocuments({
+      status: "delivered",
+    });
+    const pendingOrder = await orderModel.countDocuments({ status: "pending" });
+    const failedOrder = await orderModel.countDocuments({ status: "failed" });
+
+    return res.status(200).json({
+      data: [
+        {
+          Name: "Total Order",
+          Total: totalOrder,
+        },
+        {
+          Name: "Pending",
+          Total: pendingOrder,
+        },
+        {
+          Name: "Delivered",
+          Total: deliveredOrder,
+        },
+        {
+          Name: "Failed",
+          Total: failedOrder,
+        },
+      ],
+    });
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }

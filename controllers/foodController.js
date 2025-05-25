@@ -35,7 +35,13 @@ exports.addFoodItem = async (req, res) => {
 
 exports.listfood = async (req, res) => {
   try {
-    const food = await foodModel.find({});
+    const { category } = req.query;
+    if (category) {
+      const regex = new RegExp(category, "i");
+      const food = await foodModel.find({ category: regex });
+      return res.status(200).json({ data: food });
+    }
+    const food = await foodModel.find({}).sort({ _id: -1 }).limit(30);
     return res.status(200).json({ success: true, data: food });
   } catch (error) {
     res.json({ message: error.message });
@@ -93,7 +99,6 @@ exports.updateFoodItem = async (req, res) => {
     const { id, name, description, category, prize } = req.body;
     const newImage = req.file ? req.file.filename : null;
 
-    console.log(newImage, "new image");
     if (!id) {
       return res.status(400).json({
         success: false,
@@ -144,6 +149,23 @@ exports.singleFood = async (req, res) => {
     }
 
     return res.status(200).json({ data: food });
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
+  }
+};
+
+// categoryfood
+exports.categoryFood = async (req, res) => {
+  try {
+    const { category } = req.query;
+    if (!category) {
+      return res.status(400).json({ message: "Category is required" });
+    }
+    const regex = new RegExp(category, "i");
+    const data = await foodModel.find({ category: regex });
+    return res
+      .status(200)
+      .json({ data: data, message: "Category food fetched Successfully!" });
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }

@@ -20,5 +20,6 @@ foodRouter.put(
   upload.single("image"),
   foodController.updateFoodItem
 );
+foodRouter.post("/search", foodController.seachFood);
 
 module.exports = foodRouter;

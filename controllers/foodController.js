@@ -170,3 +170,21 @@ exports.categoryFood = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
+
+// search food
+
+exports.seachFood = async (req, res) => {
+  try {
+    const { search } = req.body;
+    if (!search) {
+      return res.status(400).json({ message: "Search is required" });
+    }
+    const regex = new RegExp(search, "i");
+    const data = await foodModel.find({ name: regex });
+    return res
+      .status(200)
+      .json({ data: data, message: "Search food fetched Successfully!" });
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
+  }
+};

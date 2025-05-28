@@ -154,23 +154,6 @@ exports.singleFood = async (req, res) => {
   }
 };
 
-// categoryfood
-exports.categoryFood = async (req, res) => {
-  try {
-    const { category } = req.query;
-    if (!category) {
-      return res.status(400).json({ message: "Category is required" });
-    }
-    const regex = new RegExp(category, "i");
-    const data = await foodModel.find({ category: regex });
-    return res
-      .status(200)
-      .json({ data: data, message: "Category food fetched Successfully!" });
-  } catch (error) {
-    return res.status(400).json({ message: error.message });
-  }
-};
-
 // search food
 exports.seachFood = async (req, res) => {
   try {

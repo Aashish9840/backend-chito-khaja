@@ -172,7 +172,6 @@ exports.categoryFood = async (req, res) => {
 };
 
 // search food
-
 exports.seachFood = async (req, res) => {
   try {
     const { search } = req.body;

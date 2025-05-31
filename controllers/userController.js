@@ -1,6 +1,7 @@
 const userModel = require("../models/userModel");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const foodModel = require("../models/food_model");
 require("dotenv").config();
 
 // token creation
@@ -300,16 +301,68 @@ exports.updateUserDetails = async (req, res) => {
 // update cartData
 exports.cartData = async (req, res) => {
   try {
-const {userId}=req.body;
-if (!userId){
-  return res.status(400).json({message:"User not found"})
-}
-const user=await userModel.findById(userId)
-if (!user){
-  return res.status(400).json({message:"User not found"})
-}
-
+    const { userId, foodId, prize, quantity, name, image } = req.body;
+    console.log(image, "image data");
+    console.log(name, "hello");
+    if (!userId) {
+      return res.status(400).json({ message: "User not found" });
+    }
+    if (!foodId || !prize || !quantity || !name) {
+      return res.status(400).json({ message: "Food Details are missing!" });
+    }
+    if (isNaN(quantity) || quantity <= 0 || isNaN(prize) || prize <= 0) {
+      return res
+        .status(400)
+        .json({ message: "Quantity and prize must be positive numbers" });
+    }
+    const user = await userModel.findById(userId);
+    if (!user) {
+      return res.status(400).json({ message: "User not found" });
+    }
+    const food = user.cardData.find((foodItem) => foodItem.id === foodId);
+    if (!food) {
+      user.cardData.push({
+        id: foodId,
+        prize,
+        quantity,
+        name,
+        image,
+      });
+    } else {
+      food.quantity += Number(quantity);
+    }
+    await user.save();
+    return res.status(200).json({ message: "Food added to cart" });
   } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+};
+
+// updated cartItems
+
+exports.updateCartData = async (req, res) => {
+  console.log("hello");
+  try {
+    const cartItems = req.body;
+
+    const userId = req.user?.id;
+
+    if (!userId || !Array.isArray(cartItems)) {
+      return res.status(400).json({ message: "Invalid request data" });
+    }
+
+    const user = await userModel.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    user.cardData = cartItems;
+    await user.save();
+
+    return res
+      .status(200)
+      .json({ message: "Cart updated successfully", data: user.cardData });
+  } catch {
     return res.status(400).json({ error: error.message });
   }
 };

@@ -11,4 +11,7 @@ userRouter.get(
   userValidate,
   userController.userInformation
 );
+userRouter.post("/cartData", userValidate, userController.cartData);
+userRouter.put("/updateCartData", userValidate, userController.updateCartData);
+
 module.exports = userRouter;

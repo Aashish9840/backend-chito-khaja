@@ -17,6 +17,7 @@ const userSchema = new mongoose.Schema(
       type: [
         {
           id: String,
+          image: String,
           name: String,
           prize: Number,
           quantity: Number,

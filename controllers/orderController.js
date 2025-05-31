@@ -3,16 +3,30 @@ const userModel = require("../models/userModel");
 
 exports.placeOrder = async (req, res) => {
   try {
-    const { userId, foodItems, address } = req.body;
+    const {
+      userId,
+      foodItems,
+      firstName,
+      lastName,
+      streetAddress,
+      country,
+      email,
+      city,
+    } = req.body;
 
-    if (!foodItems || !address || !userId) {
+    if (
+      !foodItems ||
+      !streetAddress ||
+      !userId ||
+      !firstName ||
+      !lastName ||
+      !country ||
+      !email ||
+      !city
+    ) {
       return res
         .status(400)
         .json({ message: "All the order details are required" });
-    }
-    const user = await userModel.findById(userId);
-    if (!user) {
-      return res.status(400).json({ message: "No user is existed" });
     }
 
     let amount = 0;
@@ -20,12 +34,14 @@ exports.placeOrder = async (req, res) => {
       amount += Number(element.amount * element.quantity);
     });
     const order = new orderModel({
-      userId,
-      userName: user.userName,
-      email: user.email,
+      firstName,
+      lastName,
       foodItems,
       amount,
-      address,
+      streetAddress,
+      city,
+      email,
+      country,
     });
     await order.save();
     return res.status(200).json({ message: "Order is placed Successfully" });

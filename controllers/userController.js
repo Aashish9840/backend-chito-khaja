@@ -76,6 +76,7 @@ exports.login = async (req, res) => {
 
 exports.logout = async (req, res) => {
   const { role } = req.body;
+  console.log(role, "hello");
   try {
     res.clearCookie("token", {
       httpOnly: true,
@@ -167,6 +168,9 @@ exports.getAllUsers = async (req, res) => {
 exports.isAuth = async (req, res) => {
   try {
     const { userId } = req.body;
+    if (!userId) {
+      return res.status(400).json({ message: "No id found" });
+    }
     const user = await userModel.findById(userId);
     if (!user) {
       return res.status(400).json({ message: "User is not found" });
@@ -290,5 +294,22 @@ exports.updateUserDetails = async (req, res) => {
       .json({ message: "Updated Information successfully" });
   } catch (error) {
     return res.status(400).json({ message: error.message });
+  }
+};
+
+// update cartData
+exports.cartData = async (req, res) => {
+  try {
+const {userId}=req.body;
+if (!userId){
+  return res.status(400).json({message:"User not found"})
+}
+const user=await userModel.findById(userId)
+if (!user){
+  return res.status(400).json({message:"User not found"})
+}
+
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
   }
 };

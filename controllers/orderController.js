@@ -8,6 +8,7 @@ exports.placeOrder = async (req, res) => {
       foodItems,
       firstName,
       lastName,
+      contact,
       streetAddress,
       country,
       email,
@@ -18,6 +19,7 @@ exports.placeOrder = async (req, res) => {
       !foodItems ||
       !streetAddress ||
       !userId ||
+      !contact ||
       !firstName ||
       !lastName ||
       !country ||
@@ -37,6 +39,7 @@ exports.placeOrder = async (req, res) => {
       userId: userId,
       firstName,
       lastName,
+      contact,
       foodItems,
       amount,
       streetAddress,

@@ -2,12 +2,15 @@ const mongoose = require("mongoose");
 
 const orderSchema = new mongoose.Schema({
   userId: { type: String, required: true },
+  firstName: { type: String, required: true },
   foodItems: { type: Array, required: true },
-  userName: { type: String, required: true },
+  lastName: { type: String, required: true },
   email: { type: String, required: true },
   amount: { type: Number, required: true },
   status: { type: String, default: "pending" },
-  address: { type: String, required: true },
+  streetAddress: { type: String, required: true },
+  city: { type: String, required: true },
+  country: { type: String, required: true },
   date: { type: Date, default: Date.now() },
 });
 

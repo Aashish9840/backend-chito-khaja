@@ -3,34 +3,54 @@ const userModel = require("../models/userModel");
 
 exports.placeOrder = async (req, res) => {
   try {
-    const { userId, foodItems, address } = req.body;
+    const {
+      userId,
+      foodItems,
+      firstName,
+      lastName,
+      contact,
+      streetAddress,
+      country,
+      email,
+      city,
+    } = req.body;
 
-    if (!foodItems || !address || !userId) {
+    if (
+      !foodItems ||
+      !streetAddress ||
+      !userId ||
+      !contact ||
+      !firstName ||
+      !lastName ||
+      !country ||
+      !email ||
+      !city
+    ) {
       return res
         .status(400)
         .json({ message: "All the order details are required" });
     }
-    const user = await userModel.findById(userId);
-    if (!user) {
-      return res.status(400).json({ message: "No user is existed" });
-    }
 
     let amount = 0;
     foodItems.forEach((element) => {
-      amount += Number(element.amount * element.quantity);
+      amount += Number(element.prize) * Number(element.quantity);
     });
     const order = new orderModel({
-      userId,
-      userName: user.userName,
-      email: user.email,
+      userId: userId,
+      firstName,
+      lastName,
+      contact,
       foodItems,
       amount,
-      address,
+      streetAddress,
+      city,
+      email,
+      country,
     });
     await order.save();
     return res.status(200).json({ message: "Order is placed Successfully" });
   } catch (error) {
-    return res.status(200).json({ message: error.message });
+    return res.status(400).json({ message: error.message });
   }
 };
 
@@ -49,7 +69,7 @@ exports.userOrder = async (req, res) => {
       .select("-email -userName");
     return res.status(200).json({ success: true, data: data });
   } catch (error) {
-    return res.status(200).json({ message: message.error });
+    return res.status(400).json({ message: message.error });
   }
 };
 
@@ -60,7 +80,7 @@ exports.getOrder = async (req, res) => {
     const data = await orderModel.find({});
     return res.status(200).json({ success: true, data: data });
   } catch (error) {
-    return res.status(200).json({ message: message.error });
+    return res.status(400).json({ message: message.error });
   }
 };
 

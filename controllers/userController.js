@@ -341,7 +341,6 @@ exports.cartData = async (req, res) => {
 // updated cartItems
 
 exports.updateCartData = async (req, res) => {
-  console.log("hello");
   try {
     const cartItems = req.body;
 

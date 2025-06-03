@@ -180,6 +180,7 @@ exports.category = async (req, res) => {
           _id: { $toLower: "$category" },
           items: {
             $push: {
+              _id: "$_id",
               name: "$name",
               description: "$description",
               prize: "$prize",

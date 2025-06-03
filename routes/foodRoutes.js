@@ -22,5 +22,6 @@ foodRouter.put(
 );
 foodRouter.post("/search", foodController.seachFood);
 foodRouter.post("/single", foodController.singleFood);
+foodRouter.get("/categoryFood", foodController.category);
 
 module.exports = foodRouter;

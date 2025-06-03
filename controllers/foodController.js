@@ -170,3 +170,34 @@ exports.seachFood = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
+
+// all gategory food
+exports.category = async (req, res) => {
+  try {
+    const data = await foodModel.aggregate([
+      {
+        $group: {
+          _id: { $toLower: "$category" },
+          items: {
+            $push: {
+              name: "$name",
+              description: "$description",
+              prize: "$prize",
+              image: "$image",
+              rating: "$rating",
+              category: "$category",
+            },
+          },
+        },
+      },
+    ]);
+    const formattedData = {};
+    data.forEach((elements) => {
+      formattedData[elements._id] = elements.items;
+    });
+
+    return res.status(200).json({ data: formattedData });
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
+  }
+};

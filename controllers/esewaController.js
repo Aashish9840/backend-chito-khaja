@@ -1,5 +1,15 @@
 const orderModel = require("../models/orderModel");
+const { v4: uuidv4 } = require("uuid");
+const crypto = require("crypto");
+function generateRandomString() {
+  return uuidv4();
+}
 
+function generateSignature(payload, secretKey) {
+  const hmac = crypto.createHmac("sha256", secretKey);
+  hmac.update(payload);
+  return hmac.digest("base64");
+}
 exports.getPayment = async (req, res) => {
   try {
     const orderId = req.query.orderId;
@@ -14,8 +24,8 @@ exports.getPayment = async (req, res) => {
     let product_code = "EPAYTEST";
     let product_service_charge = 0;
     let product_delivery_charge = 0;
-    let success_url = "http://localhost:4000/api/payment/e-sewa/success";
-    let failure_url = "http://localhost:4000/api/payment/e-sewa/failure";
+    let success_url = "http://localhost:4000/api/payment/esewa/success";
+    let failure_url = "http://localhost:4000/api/payment/esewa/failure";
     let secretKey = "8gBm/:&EnhH.1/q";
     let signature = generateSignature(
       `total_amount=${amount},transaction_uuid=${transaction_uuid},product_code=${product_code}`,

@@ -42,7 +42,7 @@ app.use("/api/order", orderRouter);
 app.use("/images", express.static("uploads"));
 
 // payment api
-app.use("/api/payement/e-sewa", esewaRouter);
+app.use("/api/payment/esewa", esewaRouter);
 
 const Port = process.env.APP_PORT || 4000;
 app.listen(Port, () => {

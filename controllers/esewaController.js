@@ -19,16 +19,18 @@ exports.getPayment = async (req, res) => {
     const orderDetails = await orderModel.findById(orderId);
     let order_price = orderDetails.amount;
     let tax_amount = 0;
-    let amount = order_price;
+    let total_amount = order_price;
     let transaction_uuid = generateRandomString();
     let product_code = "EPAYTEST";
     let product_service_charge = 0;
     let product_delivery_charge = 0;
-    let success_url = "http://localhost:4000/api/payment/esewa/success";
-    let failure_url = "http://localhost:4000/api/payment/esewa/failure";
+    let success_url =
+      "https://d1ec-2403-3800-323c-d26-ec83-bed9-29b-e543.ngrok-free.app/api/payment/esewa/success";
+    let failure_url =
+      "https://d1ec-2403-3800-323c-d26-ec83-bed9-29b-e543.ngrok-free.app/api/payment/esewa/failure";
     let secretKey = "8gBm/:&EnhH.1/q";
     let signature = generateSignature(
-      `total_amount=${amount},transaction_uuid=${transaction_uuid},product_code=${product_code}`,
+      `total_amount=${total_amount},transaction_uuid=${transaction_uuid},product_code=${product_code}`,
       secretKey
     );
 
@@ -36,7 +38,7 @@ exports.getPayment = async (req, res) => {
       data: {
         order_price,
         tax_amount,
-        amount,
+        total_amount,
         transaction_uuid,
         product_code,
         product_service_charge,

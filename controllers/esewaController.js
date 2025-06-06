@@ -25,9 +25,9 @@ exports.getPayment = async (req, res) => {
     let product_service_charge = 0;
     let product_delivery_charge = 0;
     let success_url =
-      "https://d1ec-2403-3800-323c-d26-ec83-bed9-29b-e543.ngrok-free.app/api/payment/esewa/success";
+      "https://8c06-2407-1400-aa2b-e018-a833-caa6-d16b-96a6.ngrok-free.app/api/payment/esewa/success";
     let failure_url =
-      "https://d1ec-2403-3800-323c-d26-ec83-bed9-29b-e543.ngrok-free.app/api/payment/esewa/failure";
+      "https://8c06-2407-1400-aa2b-e018-a833-caa6-d16b-96a6.ngrok-free.app/api/payment/esewa/failure";
     let secretKey = "8gBm/:&EnhH.1/q";
     let signature = generateSignature(
       `total_amount=${total_amount},transaction_uuid=${transaction_uuid},product_code=${product_code}`,
@@ -55,6 +55,7 @@ exports.getPayment = async (req, res) => {
 
 exports.successEsewa = async (req, res) => {
   try {
+    res.redirect("http://localhost:3001");
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }

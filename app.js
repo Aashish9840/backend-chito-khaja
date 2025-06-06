@@ -8,6 +8,7 @@ const userRouter = require("./routes/userRoute");
 const cartRouter = require("./routes/cartRouter");
 const orderRouter = require("./routes/orderRoute");
 const adminRoute = require("./routes/adminRoute");
+const esewaRouter = require("./routes/esewaRoute");
 
 const app = express();
 
@@ -20,7 +21,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 app.use(cors());
-
 
 //api-end-point for food Model
 app.use("/api/food", foodRouter);
@@ -40,6 +40,9 @@ app.use("/api/cart", cartRouter);
 app.use("/api/order", orderRouter);
 // access image
 app.use("/images", express.static("uploads"));
+
+// payment api
+app.use("/api/payment/esewa", esewaRouter);
 
 const Port = process.env.APP_PORT || 4000;
 app.listen(Port, () => {

@@ -47,8 +47,11 @@ exports.placeOrder = async (req, res) => {
       email,
       country,
     });
-    await order.save();
-    return res.status(200).json({ message: "Order is placed Successfully" });
+    const savedOrder = await order.save();
+    return res.status(200).json({
+      message: "Order is placed Successfully",
+      orderId: savedOrder._id,
+    });
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }
@@ -64,9 +67,7 @@ exports.userOrder = async (req, res) => {
       return res.status(400).json({ message: "No user exists" });
     }
 
-    const data = await orderModel
-      .find({ userId: userId })
-      .select("-email -userName");
+    const data = await orderModel.find({ userId: userId }).select("-email");
     return res.status(200).json({ success: true, data: data });
   } catch (error) {
     return res.status(400).json({ message: message.error });

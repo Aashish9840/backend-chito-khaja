@@ -36,7 +36,7 @@ exports.getPayment = async (req, res) => {
 
     return res.status(200).json({
       data: {
-        order_price,
+        amount: order_price,
         tax_amount,
         total_amount,
         transaction_uuid,
@@ -45,7 +45,6 @@ exports.getPayment = async (req, res) => {
         success_url,
         failure_url,
         product_delivery_charge,
-        secretKey,
         signature,
       },
     });

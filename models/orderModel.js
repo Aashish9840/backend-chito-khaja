@@ -7,6 +7,7 @@ const orderSchema = new mongoose.Schema({
   lastName: { type: String, required: true },
   email: { type: String, required: true },
   amount: { type: Number, required: true },
+  transaction_uuid: { type: String, default: "" },
   status: { type: String, default: "pending" },
   payment: {
     type: String,

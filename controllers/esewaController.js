@@ -74,7 +74,9 @@ exports.successEsewa = async (req, res) => {
 
 exports.failureEsewa = async (req, res) => {
   try {
-    console.log("Eror in payment");
+    const id = generateRandomString();
+
+    return res.redirect(`http://localhost:3000/esewa/failure/${id}`);
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }
@@ -83,13 +85,20 @@ exports.failureEsewa = async (req, res) => {
 exports.successInformation = async (req, res) => {
   try {
     const orderId = req.params.id;
-    console.log(orderId, "order id is received");
     if (!orderId) {
       return res.status(400).json({ message: "Order ID is required" });
     }
     const order = await orderModel.findById(orderId);
 
     return res.status(200).json({ data: order });
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
+  }
+};
+
+exports.failureInformation = async (req, res) => {
+  try {
+    return res.status(200).json({ message: "Payment failed!" });
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }

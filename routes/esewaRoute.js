@@ -6,5 +6,6 @@ esewaRouter.get("/getPayment", esewaController.getPayment);
 esewaRouter.get("/success", esewaController.successEsewa);
 esewaRouter.get("/failure", esewaController.failureEsewa);
 esewaRouter.get("/successInformation/:id", esewaController.successInformation);
+esewaRouter.get("/failureInformation", esewaController.failureInformation);
 
 module.exports = esewaRouter;

@@ -15,7 +15,6 @@ const tokenFunction = (id, role) => {
 exports.registerUser = async (req, res) => {
   try {
     const { userName, password, email } = req.body;
-    console.log(email, userName, password, "email");
     if (!userName || !password || !email) {
       return res.status(400).json({
         success: false,
@@ -77,7 +76,6 @@ exports.login = async (req, res) => {
 
 exports.logout = async (req, res) => {
   const { role } = req.body;
-  console.log(role, "hello");
   try {
     res.clearCookie("token", {
       httpOnly: true,
@@ -302,8 +300,6 @@ exports.updateUserDetails = async (req, res) => {
 exports.cartData = async (req, res) => {
   try {
     const { userId, foodId, prize, quantity, name, image } = req.body;
-    console.log(image, "image data");
-    console.log(name, "hello");
     if (!userId) {
       return res.status(400).json({ message: "User not found" });
     }

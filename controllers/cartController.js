@@ -13,7 +13,6 @@ exports.addCart = async (req, res) => {
     }
 
     const cart = user.cardData;
-    console.log(cart, "cart items");
     const existItem = cart?.find((element) => element.id === foodId);
 
     if (existItem) {

@@ -25,15 +25,16 @@ exports.getPayment = async (req, res) => {
     let product_service_charge = 0;
     let product_delivery_charge = 0;
     let success_url =
-      "https://8c06-2407-1400-aa2b-e018-a833-caa6-d16b-96a6.ngrok-free.app/api/payment/esewa/success";
+      "https://b3a7-2403-3800-323c-e09-4446-1181-ad01-490e.ngrok-free.app/api/payment/esewa/success";
     let failure_url =
-      "https://8c06-2407-1400-aa2b-e018-a833-caa6-d16b-96a6.ngrok-free.app/api/payment/esewa/failure";
+      "https://b3a7-2403-3800-323c-e09-4446-1181-ad01-490e.ngrok-free.app/api/payment/esewa/failure";
     let secretKey = "8gBm/:&EnhH.1/q";
     let signature = generateSignature(
       `total_amount=${total_amount},transaction_uuid=${transaction_uuid},product_code=${product_code}`,
       secretKey
     );
-
+    orderDetails.transaction_uuid = transaction_uuid;
+    await orderDetails.save();
     return res.status(200).json({
       data: {
         amount: order_price,
@@ -55,7 +56,17 @@ exports.getPayment = async (req, res) => {
 
 exports.successEsewa = async (req, res) => {
   try {
-    res.redirect("http://localhost:3001");
+    let token = req.query.data;
+    let queryBody = JSON.parse(Buffer.from(token, "base64").toString("utf-8"));
+    const transaction_id = queryBody.transaction_uuid;
+    const order = await orderModel.findOne({
+      transaction_uuid: transaction_id,
+    });
+
+    order.payment = "success";
+    await order.save();
+
+    return res.redirect(`http://localhost:3000/esewa/success/${order._id}`);
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }
@@ -63,6 +74,31 @@ exports.successEsewa = async (req, res) => {
 
 exports.failureEsewa = async (req, res) => {
   try {
+    const id = generateRandomString();
+
+    return res.redirect(`http://localhost:3000/esewa/failure/${id}`);
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
+  }
+};
+
+exports.successInformation = async (req, res) => {
+  try {
+    const orderId = req.params.id;
+    if (!orderId) {
+      return res.status(400).json({ message: "Order ID is required" });
+    }
+    const order = await orderModel.findById(orderId);
+
+    return res.status(200).json({ data: order });
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
+  }
+};
+
+exports.failureInformation = async (req, res) => {
+  try {
+    return res.status(200).json({ message: "Payment failed!" });
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }

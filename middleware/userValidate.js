@@ -24,6 +24,28 @@ const userValidate = async (req, res, next) => {
   }
 };
 
+const adminValidate = async (req, res, next) => {
+  try {
+    const { adminToken } = req.cookies;
+    if (!adminToken) {
+      return res.status(400).json({ message: "Cookies not found" });
+    }
+    const decodeToken = jwt.verify(adminToken, process.env.SECRET_KEY);
+
+    const users = await userModel.findById(decodeToken?.id);
+    if (decodeToken.id && users) {
+      req.user = users;
+      req.body = req.body || {};
+      req.body.userId = decodeToken.id;
+      req.body.role = decodeToken.role;
+      next();
+    } else {
+      return res.status(400).json({ message: "Not authorized. Login Again" });
+    }
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
+  }
+};
 const isAdmin = (req, res, next) => {
   if (req.user?.role !== "admin" || req.user?.role !== "staff") {
     return res
@@ -36,4 +58,5 @@ const isAdmin = (req, res, next) => {
 module.exports = {
   userValidate,
   isAdmin,
+  adminValidate,
 };

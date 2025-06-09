@@ -43,6 +43,7 @@ exports.registerUser = async (req, res) => {
   }
 };
 
+// user login
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -56,6 +57,10 @@ exports.login = async (req, res) => {
     const user = await userModel.findOne({ email: email });
     if (!user) {
       return res.status(400).json({ message: "User doesnot exists" });
+    }
+
+    if (user.role !== "user") {
+      return res.status(400).json({ message: "Only user are allowed!" });
     }
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
@@ -73,7 +78,6 @@ exports.login = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
-
 exports.logout = async (req, res) => {
   const { role } = req.body;
   try {
@@ -132,7 +136,7 @@ exports.adminLogin = async (req, res) => {
     if (!user || (user.role !== "admin" && user.role !== "staff")) {
       return res
         .status(400)
-        .json({ message: "Access denied: Admin and Stafft is allowed" });
+        .json({ message: "Access denied: Admin and Stafft only allowed" });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);

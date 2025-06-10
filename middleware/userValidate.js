@@ -49,7 +49,7 @@ const adminValidate = async (req, res, next) => {
 const isAdmin = (req, res, next) => {
   if (req.user?.role !== "admin" || req.user?.role !== "staff") {
     return res
-      .status(403)
+      .status(404)
       .json({ message: "Access denied: Admins and Staffs only" });
   }
   next();

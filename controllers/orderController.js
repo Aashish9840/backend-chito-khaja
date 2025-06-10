@@ -156,3 +156,19 @@ exports.orderReport = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
+
+// payment update
+exports.paymentUpdate = async (req, res) => {
+  try {
+    const { orderId, status } = req.body;
+    if (!orderId || !status) {
+      return res.status(400).json({ message: "Order ID and Status required" });
+    }
+    await orderModel.findByIdAndUpdate(orderId, { payment: status });
+    return res
+      .status(200)
+      .json({ success: true, message: "Order Status is updated" });
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
+  }
+};

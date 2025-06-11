@@ -3,7 +3,8 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const foodModel = require("../models/food_model");
 require("dotenv").config();
-
+const zod = require("zod");
+const { email } = require("zod/v4");
 // token creation
 const tokenFunction = (id, role) => {
   const token = jwt.sign({ id, role }, process.env.SECRET_KEY, {
@@ -12,15 +13,31 @@ const tokenFunction = (id, role) => {
   return token;
 };
 
+// zod validation
+const schema = zod.object({
+  userName: zod.string().min(1, { message: "username required" }),
+  email: zod
+    .string()
+    .email({ message: "invalid email" })
+    .min(1, { message: "email required" }),
+  password: zod
+    .string()
+    .min(8, { message: "minimum 8 characters required" })
+    .min(1, { message: "password required" }),
+});
 exports.registerUser = async (req, res) => {
   try {
-    const { userName, password, email } = req.body;
-    if (!userName || !password || !email) {
-      return res.status(400).json({
-        success: false,
-        message: "UserName, Email, and Password are required",
+    const validateUser = schema.safeParse(req.body);
+
+    if (!validateUser.success) {
+      const errors = {};
+      validateUser.error.errors.forEach((error) => {
+        errors[error.path[0]] = error.message;
       });
+      return res.status(400).json({ error: errors });
     }
+
+    const { email, userName, password } = validateUser.data;
     const exist = await userModel.findOne({ email: email });
     if (exist) {
       return res.status(400).json({
@@ -109,7 +126,9 @@ exports.deleteUser = async (req, res) => {
       return res.status(400).json({ message: "User is not found" });
     }
     if (user.role === "admin") {
-      return res.status(400).json({ message: "Admingit user can't be deleted" });
+      return res
+        .status(400)
+        .json({ message: "Admingit user can't be deleted" });
     }
     const adminUser = await userModel.findById(userId);
 

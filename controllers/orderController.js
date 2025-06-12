@@ -1,5 +1,10 @@
 const orderModel = require("../models/orderModel");
 const userModel = require("../models/userModel");
+const fs = require("fs");
+const { pdfDocument } = require("pdf-lib");
+const path = require("path");
+
+const PathDir = path.join(__dirname, "../orderPDFFiles");
 
 exports.placeOrder = async (req, res) => {
   try {

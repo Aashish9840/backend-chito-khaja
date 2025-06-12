@@ -7,11 +7,11 @@ const path = require("path");
 const pathDir = path.join(__dirname, "../orderPDFFiles");
 
 const createOrUpdatePDF = async (userId, orderData) => {
-  const filePath = path.join(pathDir, `${userId}`);
+  const filePath = path.join(pathDir, `${userId}.pdf`);
   let pdfDoc;
   if (fs.existsSync(filePath)) {
     const existDocs = fs.readFileSync(filePath);
-    pdfDoc = await PDFDocument.load(existingPdfBytes);
+    pdfDoc = await PDFDocument.load(existDocs);
   } else {
     pdfDoc = await PDFDocument.create();
   }
@@ -44,7 +44,7 @@ const createOrUpdatePDF = async (userId, orderData) => {
   const pdfBytes = await pdfDoc.save();
   fs.writeFileSync(filePath, pdfBytes);
 
-  return `${userId}.pdf`; // return the file name
+  return `${userId}.pdf`;
 };
 
 exports.placeOrder = async (req, res) => {
@@ -101,8 +101,6 @@ exports.placeOrder = async (req, res) => {
 
     res.status(200).json({
       message: "Order placed successfully",
-      orderId: savedOrder._id,
-      pdfFile: fileName,
     });
     return res.status(200).json({
       message: "Order is placed Successfully",

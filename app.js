@@ -2,6 +2,8 @@ const express = require("express");
 require("dotenv").config();
 const cors = require("cors");
 const cookie_parser = require("cookie-parser");
+const fs = require("fs");
+const path = require("path");
 const connectMongo = require("./configuration/mongoDBConnection");
 const foodRouter = require("./routes/foodRoutes");
 const userRouter = require("./routes/userRoute");
@@ -40,6 +42,10 @@ app.use("/api/cart", cartRouter);
 app.use("/api/order", orderRouter);
 // access image
 app.use("/images", express.static("uploads"));
+
+// access pdf file
+
+app.use("/orderfiles", express.static(path.join(__dirname, "orderPDFFiles")));
 
 // payment api
 app.use("/api/payment/esewa", esewaRouter);

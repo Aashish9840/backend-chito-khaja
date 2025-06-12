@@ -14,6 +14,7 @@ const orderSchema = new mongoose.Schema({
     enum: ["pending", "success", "failed"],
     default: "pending",
   },
+  pdfFileName: { type: String },
   streetAddress: { type: String, required: true },
   city: { type: String, required: true },
   country: { type: String, required: true },

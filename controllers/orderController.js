@@ -1,10 +1,51 @@
 const orderModel = require("../models/orderModel");
 const userModel = require("../models/userModel");
 const fs = require("fs");
-const { pdfDocument } = require("pdf-lib");
+const { PDFDocument, StandardFonts } = require("pdf-lib");
 const path = require("path");
 
-const PathDir = path.join(__dirname, "../orderPDFFiles");
+const pathDir = path.join(__dirname, "../orderPDFFiles");
+
+const createOrUpdatePDF = async (userId, orderData) => {
+  const filePath = path.join(pathDir, `${userId}`);
+  let pdfDoc;
+  if (fs.existsSync(filePath)) {
+    const existDocs = fs.readFileSync(filePath);
+    pdfDoc = await PDFDocument.load(existingPdfBytes);
+  } else {
+    pdfDoc = await PDFDocument.create();
+  }
+
+  const page = pdfDoc.addPage([600, 400]);
+  const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  let y = 370;
+
+  const draw = (text, x = 50) => {
+    page.drawText(text, { x, y, size: 12, font });
+    y -= 20;
+  };
+
+  draw(`Order ID: ${orderData._id}`);
+  draw(`Name: ${orderData.firstName} ${orderData.lastName}`);
+  draw(`Email: ${orderData.email}`);
+  draw(
+    `Address: ${orderData.streetAddress}, ${orderData.city}, ${orderData.country}`
+  );
+  draw(`Contact: ${orderData.contact}`);
+  draw(`Date: ${new Date().toLocaleString()}`);
+
+  draw(`\nItems:`);
+  orderData.foodItems.forEach((item, index) => {
+    draw(`${index + 1}. ${item.name} x${item.quantity} - $${item.prize}`);
+  });
+
+  draw(`\nTotal Amount: $${orderData.amount}`);
+
+  const pdfBytes = await pdfDoc.save();
+  fs.writeFileSync(filePath, pdfBytes);
+
+  return `${userId}.pdf`; // return the file name
+};
 
 exports.placeOrder = async (req, res) => {
   try {
@@ -53,6 +94,16 @@ exports.placeOrder = async (req, res) => {
       country,
     });
     const savedOrder = await order.save();
+    const fileName = await createOrUpdatePDF(userId, savedOrder);
+
+    savedOrder.pdfFileName = fileName;
+    await savedOrder.save();
+
+    res.status(200).json({
+      message: "Order placed successfully",
+      orderId: savedOrder._id,
+      pdfFile: fileName,
+    });
     return res.status(200).json({
       message: "Order is placed Successfully",
       orderId: savedOrder._id,

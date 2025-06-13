@@ -16,30 +16,85 @@ const createOrUpdatePDF = async (userId, orderData) => {
     pdfDoc = await PDFDocument.create();
   }
 
-  const page = pdfDoc.addPage([600, 400]);
+  const page = pdfDoc.addPage([600, 500]);
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
-  let y = 370;
+  let y = 480;
+  const lineHeight = 20;
 
-  const draw = (text, x = 50) => {
-    page.drawText(text, { x, y, size: 12, font });
-    y -= 20;
+  const drawText = (text, x, y, size = 12) => {
+    page.drawText(text, { x, y, size, font });
   };
 
-  draw(`Order ID: ${orderData._id}`);
-  draw(`Name: ${orderData.firstName} ${orderData.lastName}`);
-  draw(`Email: ${orderData.email}`);
-  draw(
-    `Address: ${orderData.streetAddress}, ${orderData.city}, ${orderData.country}`
-  );
-  draw(`Contact: ${orderData.contact}`);
-  draw(`Date: ${new Date().toLocaleString()}`);
+  const drawLine = (x1, y1, x2, y2) => {
+    page.drawLine({
+      start: { x: x1, y: y1 },
+      end: { x: x2, y: y2 },
+      thickness: 1,
+    });
+  };
 
-  draw(`\nItems:`);
+  // Header
+  drawText(`Order Details`, 220, y);
+  y -= lineHeight * 2;
+
+  drawText(`Order ID: ${orderData._id}`, 50, y);
+  y -= lineHeight;
+  drawText(`Name: ${orderData.firstName} ${orderData.lastName}`, 50, y);
+  y -= lineHeight;
+  drawText(`Email: ${orderData.email}`, 50, y);
+  y -= lineHeight;
+  drawText(
+    `Address: ${orderData.streetAddress}, ${orderData.city}, ${orderData.country}`,
+    50,
+    y
+  );
+  y -= lineHeight;
+  drawText(`Contact: ${orderData.contact}`, 50, y);
+  y -= lineHeight;
+  drawText(`Date: ${new Date().toLocaleString()}`, 50, y);
+  y -= lineHeight * 2;
+
+  // Table headers
+  const tableX = 50;
+  const colWidths = [30, 200, 80, 80]; // S.No, Item, Quantity, Price
+  const headers = ["#", "Item", "Quantity", "Price"];
+  let x = tableX;
+
+  headers.forEach((header, i) => {
+    drawText(header, x + 2, y);
+    drawLine(x, y - 2, x, y - lineHeight); // vertical lines
+    x += colWidths[i];
+  });
+  drawLine(x, y - 2, x, y - lineHeight); // last vertical line
+  drawLine(tableX, y - 2, x, y - 2); // top border
+  y -= lineHeight;
+  drawLine(tableX, y, x, y); // bottom border of header row
+
+  // Table rows
   orderData.foodItems.forEach((item, index) => {
-    draw(`${index + 1}. ${item.name} x${item.quantity} - $${item.prize}`);
+    x = tableX;
+    const values = [
+      (index + 1).toString(),
+      item.name,
+      item.quantity.toString(),
+      `$${item.prize}`,
+    ];
+
+    values.forEach((val, i) => {
+      drawText(val, x + 2, y);
+      drawLine(x, y - 2, x, y - lineHeight); // vertical
+      x += colWidths[i];
+    });
+
+    drawLine(x, y - 2, x, y - lineHeight);
+    drawLine(tableX, y - 2, x, y - 2); // top border
+    y -= lineHeight;
+    drawLine(tableX, y, x, y); // bottom border
   });
 
-  draw(`\nTotal Amount: $${orderData.amount}`);
+  // Total amount
+  y -= lineHeight;
+  drawText(`Total Amount: $${orderData.amount}`, 50, y);
 
   const pdfBytes = await pdfDoc.save();
   fs.writeFileSync(filePath, pdfBytes);
@@ -121,10 +176,23 @@ exports.userOrder = async (req, res) => {
       return res.status(400).json({ message: "No user exists" });
     }
 
-    const data = await orderModel.find({ userId: userId }).select("-email");
+    const data = await orderModel.aggregate([
+      { $match: { userId: userId } },
+      {
+        $facet: {
+          allData: [{ $sort: { date: -1 } }],
+          latestPdf: [
+            { $sort: { date: -1 } },
+            { $limit: 1 },
+            { $project: { pdfFile: "$pdfFileName", _id: 0 } },
+          ],
+        },
+      },
+    ]);
+
     return res.status(200).json({ success: true, data: data });
   } catch (error) {
-    return res.status(400).json({ message: message.error });
+    return res.status(400).json({ message: error.message });
   }
 };
 

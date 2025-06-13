@@ -7,9 +7,9 @@ const { userValidate } = require("../middleware/userValidate");
 orderRouter.post("/placeOrder", userValidate, orderController.placeOrder);
 orderRouter.get("/userOrder", userValidate, orderController.userOrder);
 orderRouter.get("/getOrder", orderController.getOrder);
-orderRouter.put("/updateStatus", orderController.updateStatus);
+orderRouter.put("/updateStatus", userValidate, orderController.updateStatus);
 orderRouter.delete("/delete", orderController.deleteOrder);
 orderRouter.get("/orderReport", orderController.orderReport);
-orderRouter.put("/paymentUpdate", orderController.paymentUpdate);
+orderRouter.put("/paymentUpdate", userValidate, orderController.paymentUpdate);
 
 module.exports = orderRouter;

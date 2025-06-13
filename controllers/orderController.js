@@ -56,8 +56,12 @@ const generateOrderPdf = async (userId, orderData) => {
     drawText(`${orderData.streetAddress}`, 150, y);
     y -= lineHeight;
 
-    drawText(`City:`, 50, y, 12, true);
-    drawText(` ${orderData.city}`, 150, y);
+    drawText(`Status:`, 50, y, 12, true);
+    drawText(` ${orderData.status}`, 150, y);
+    y -= lineHeight;
+
+    drawText(`Payment:`, 50, y, 12, true);
+    drawText(` ${orderData.payment}`, 150, y);
     y -= lineHeight;
 
     drawText(`Country:`, 50, y, 12, true);
@@ -226,11 +230,12 @@ exports.getOrder = async (req, res) => {
 
 exports.updateStatus = async (req, res) => {
   try {
-    const { orderId, status } = req.body;
+    const { userId, orderId, status } = req.body;
     if (!orderId || !status) {
       return res.status(400).json({ message: "Order ID and Status required" });
     }
     await orderModel.findByIdAndUpdate(orderId, { status: status });
+    await generateOrderPdf(userId);
     return res
       .status(200)
       .json({ success: true, message: "Order Status is updated" });
@@ -313,11 +318,12 @@ exports.orderReport = async (req, res) => {
 // payment update
 exports.paymentUpdate = async (req, res) => {
   try {
-    const { orderId, status } = req.body;
+    const { userId, orderId, status } = req.body;
     if (!orderId || !status) {
       return res.status(400).json({ message: "Order ID and Status required" });
     }
     await orderModel.findByIdAndUpdate(orderId, { payment: status });
+    await generateOrderPdf(userId);
     return res
       .status(200)
       .json({ success: true, message: "Order Status is updated" });

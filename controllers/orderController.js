@@ -6,99 +6,44 @@ const path = require("path");
 
 const pathDir = path.join(__dirname, "../orderPDFFiles");
 
-const createOrUpdatePDF = async (userId, orderData) => {
+const generateOrderPdf = async (userId, orderData) => {
   const filePath = path.join(pathDir, `${userId}.pdf`);
-  let pdfDoc;
-  if (fs.existsSync(filePath)) {
-    const existDocs = fs.readFileSync(filePath);
-    pdfDoc = await PDFDocument.load(existDocs);
-  } else {
-    pdfDoc = await PDFDocument.create();
-  }
-
-  const page = pdfDoc.addPage([600, 500]);
+  const pdfDoc = await PDFDocument.create();
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
-  let y = 480;
-  const lineHeight = 20;
+  const orders = await orderModel.find({ userId }).sort({ date: -1 });
 
-  const drawText = (text, x, y, size = 12) => {
-    page.drawText(text, { x, y, size, font });
-  };
+  for (let orderData of orders) {
+    const page = pdfDoc.addPage([600, 500]);
+    let y = 480;
+    const lineHeight = 20;
 
-  const drawLine = (x1, y1, x2, y2) => {
-    page.drawLine({
-      start: { x: x1, y: y1 },
-      end: { x: x2, y: y2 },
-      thickness: 1,
-    });
-  };
+    const drawText = (text, x, y, size = 12) =>
+      page.drawText(text, { x, y, size, font });
 
-  // Header
-  drawText(`Order Details`, 220, y);
-  y -= lineHeight * 2;
-
-  drawText(`Order ID: ${orderData._id}`, 50, y);
-  y -= lineHeight;
-  drawText(`Name: ${orderData.firstName} ${orderData.lastName}`, 50, y);
-  y -= lineHeight;
-  drawText(`Email: ${orderData.email}`, 50, y);
-  y -= lineHeight;
-  drawText(
-    `Address: ${orderData.streetAddress}, ${orderData.city}, ${orderData.country}`,
-    50,
-    y
-  );
-  y -= lineHeight;
-  drawText(`Contact: ${orderData.contact}`, 50, y);
-  y -= lineHeight;
-  drawText(`Date: ${new Date().toLocaleString()}`, 50, y);
-  y -= lineHeight * 2;
-
-  // Table headers
-  const tableX = 50;
-  const colWidths = [30, 200, 80, 80]; // S.No, Item, Quantity, Price
-  const headers = ["#", "Item", "Quantity", "Price"];
-  let x = tableX;
-
-  headers.forEach((header, i) => {
-    drawText(header, x + 2, y);
-    drawLine(x, y - 2, x, y - lineHeight); // vertical lines
-    x += colWidths[i];
-  });
-  drawLine(x, y - 2, x, y - lineHeight); // last vertical line
-  drawLine(tableX, y - 2, x, y - 2); // top border
-  y -= lineHeight;
-  drawLine(tableX, y, x, y); // bottom border of header row
-
-  // Table rows
-  orderData.foodItems.forEach((item, index) => {
-    x = tableX;
-    const values = [
-      (index + 1).toString(),
-      item.name,
-      item.quantity.toString(),
-      `$${item.prize}`,
-    ];
-
-    values.forEach((val, i) => {
-      drawText(val, x + 2, y);
-      drawLine(x, y - 2, x, y - lineHeight); // vertical
-      x += colWidths[i];
-    });
-
-    drawLine(x, y - 2, x, y - lineHeight);
-    drawLine(tableX, y - 2, x, y - 2); // top border
+    // Draw basic order info
+    drawText(`Order ID: ${orderData._id}`, 50, y);
     y -= lineHeight;
-    drawLine(tableX, y, x, y); // bottom border
-  });
+    drawText(`Name: ${orderData.firstName} ${orderData.lastName}`, 50, y);
+    y -= lineHeight;
+    drawText(`Date: ${new Date(orderData.createdAt).toLocaleString()}`, 50, y);
+    y -= lineHeight;
 
-  // Total amount
-  y -= lineHeight;
-  drawText(`Total Amount: $${orderData.amount}`, 50, y);
+    // Items table (you can expand this like you already had it)
+    orderData.foodItems.forEach((item, index) => {
+      drawText(
+        `${index + 1}. ${item.name} - ${item.quantity} x $${item.prize}`,
+        50,
+        y
+      );
+      y -= lineHeight;
+    });
+
+    y -= lineHeight;
+    drawText(`Total: $${orderData.amount}`, 50, y);
+  }
 
   const pdfBytes = await pdfDoc.save();
   fs.writeFileSync(filePath, pdfBytes);
-
   return `${userId}.pdf`;
 };
 
@@ -149,17 +94,13 @@ exports.placeOrder = async (req, res) => {
       country,
     });
     const savedOrder = await order.save();
-    const fileName = await createOrUpdatePDF(userId, savedOrder);
+    const fileName = await generateOrderPdf(userId);
 
     savedOrder.pdfFileName = fileName;
     await savedOrder.save();
 
     res.status(200).json({
       message: "Order placed successfully",
-    });
-    return res.status(200).json({
-      message: "Order is placed Successfully",
-      orderId: savedOrder._id,
     });
   } catch (error) {
     return res.status(400).json({ message: error.message });
@@ -233,10 +174,25 @@ exports.deleteOrder = async (req, res) => {
         .json({ message: "Order Id and password is required" });
     }
     const order = await orderModel.findById(id);
+
     if (!order) {
       return res.status(400).json({ message: "Order with such id not found" });
     }
+    const userId = order.userId;
+
     await orderModel.findByIdAndDelete(id);
+    // for creating a new pdf for each order delete
+    const deletfilePath = path.join(pathDir, `${userId}.pdf`);
+    const orderDetails = await orderModel.find({ userId: userId });
+    if (orderDetails.length > 0) {
+      await generateOrderPdf(userId);
+    } else {
+      if (fs.existsSync(deletfilePath)) {
+        console.log("delete file");
+        fs.unlinkSync(deletfilePath);
+      }
+    }
+
     return res
       .status(200)
       .json({ message: "User Order is deleted Successfully" });
@@ -244,6 +200,7 @@ exports.deleteOrder = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
+
 // order reports
 exports.orderReport = async (req, res) => {
   try {

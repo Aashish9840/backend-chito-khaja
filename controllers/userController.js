@@ -95,10 +95,27 @@ exports.login = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
+
+//userLogOut
 exports.logout = async (req, res) => {
   const { role } = req.body;
   try {
     res.clearCookie("token", {
+      httpOnly: true,
+      secure: false,
+      sameSite: "Strict",
+    });
+    return res.status(200).json({ message: `${role} logout Successfully` });
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
+  }
+};
+
+// adminLogOut
+exports.adminLogOut = async (req, res) => {
+  const { role } = req.body;
+  try {
+    res.clearCookie("adminToken", {
       httpOnly: true,
       secure: false,
       sameSite: "Strict",

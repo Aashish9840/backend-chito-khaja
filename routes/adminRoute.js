@@ -9,7 +9,7 @@ adminRoute.get("/isAuth", adminValidate, userController.isAuth);
 adminRoute.delete("/delete-user", adminValidate, userController.deleteUser);
 
 adminRoute.put("/update-role", userController.roleUpdate);
-adminRoute.get("/logout", adminValidate, userController.logout);
+adminRoute.get("/adminLogOut", adminValidate, userController.adminLogOut);
 adminRoute.get(
   "/userInformation",
   adminValidate,

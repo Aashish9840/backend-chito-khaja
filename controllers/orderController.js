@@ -13,33 +13,107 @@ const generateOrderPdf = async (userId, orderData) => {
   const orders = await orderModel.find({ userId }).sort({ date: -1 });
 
   for (let orderData of orders) {
-    const page = pdfDoc.addPage([600, 500]);
-    let y = 480;
+    const page = pdfDoc.addPage([600, 700]); // taller page to fit more content
+    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+    let y = 660;
     const lineHeight = 20;
 
-    const drawText = (text, x, y, size = 12) =>
-      page.drawText(text, { x, y, size, font });
+    const drawText = (text, x, y, size = 12, isBold = false) => {
+      page.drawText(text, {
+        x,
+        y,
+        size,
+        font: isBold ? fontBold : font,
+      });
+    };
 
-    // Draw basic order info
-    drawText(`Order ID: ${orderData._id}`, 50, y);
-    y -= lineHeight;
-    drawText(`Name: ${orderData.firstName} ${orderData.lastName}`, 50, y);
-    y -= lineHeight;
-    drawText(`Date: ${new Date(orderData.createdAt).toLocaleString()}`, 50, y);
+    const drawLine = (x1, y1, x2, y2) => {
+      page.drawLine({
+        start: { x: x1, y: y1 },
+        end: { x: x2, y: y2 },
+        thickness: 0.5,
+      });
+    };
+
+    // --- Section: Order Header ---
+    drawText(`Order Summary`, 230, y, 14, true);
+    y -= lineHeight * 2;
+
+    drawText(`Order ID:`, 50, y, 12, true);
+    drawText(`${orderData._id}`, 150, y);
     y -= lineHeight;
 
-    // Items table (you can expand this like you already had it)
+    drawText(`Customer:`, 50, y, 12, true);
+    drawText(`${orderData.firstName} ${orderData.lastName}`, 150, y);
+    y -= lineHeight;
+
+    drawText(`Contact:`, 50, y, 12, true);
+    drawText(`${orderData.contact}`, 150, y);
+    y -= lineHeight;
+
+    drawText(`Address:`, 50, y, 12, true);
+    drawText(`${orderData.streetAddress}`, 150, y);
+    y -= lineHeight;
+
+    drawText(`City:`, 50, y, 12, true);
+    drawText(` ${orderData.city}`, 150, y);
+    y -= lineHeight;
+
+    drawText(`Country:`, 50, y, 12, true);
+    drawText(`${orderData.country}`, 150, y);
+    y -= lineHeight;
+
+    drawText(`Email:`, 50, y, 12, true);
+    drawText(`${orderData.email}`, 150, y);
+    y -= lineHeight;
+
+    drawText(`Date:`, 50, y, 12, true);
+    drawText(`${orderData.date.toDateString()}`, 150, y);
+    y -= lineHeight * 2;
+
+    // --- Section: Table Header ---
+    const tableX = 50;
+    const colWidths = [30, 250, 80, 80]; // S.No, Item Name, Qty, Price
+    const headers = ["#", "Item", "Quantity", "Price"];
+    let x = tableX;
+
+    headers.forEach((header, i) => {
+      drawText(header, x + 2, y, 12, true);
+      drawLine(x, y - 2, x, y - lineHeight);
+      x += colWidths[i];
+    });
+    drawLine(x, y - 2, x, y - lineHeight);
+    drawLine(tableX, y - 2, x, y - 2); // top border
+    y -= lineHeight;
+    drawLine(tableX, y, x, y); // bottom border
+
+    // --- Section: Table Rows ---
     orderData.foodItems.forEach((item, index) => {
-      drawText(
-        `${index + 1}. ${item.name} - ${item.quantity} x $${item.prize}`,
-        50,
-        y
-      );
+      x = tableX;
+      const values = [
+        (index + 1).toString(),
+        item.name,
+        item.quantity.toString(),
+        ` Rs. ${item.prize}`,
+      ];
+
+      values.forEach((val, i) => {
+        drawText(val, x + 2, y);
+        drawLine(x, y - 2, x, y - lineHeight); // vertical line
+        x += colWidths[i];
+      });
+
+      drawLine(x, y - 2, x, y - lineHeight); // last vertical line
+      drawLine(tableX, y - 2, x, y - 2); // top border of the row
       y -= lineHeight;
+      drawLine(tableX, y, x, y); // bottom border of the row (moved inside loop)
     });
 
-    y -= lineHeight;
-    drawText(`Total: $${orderData.amount}`, 50, y);
+    // --- Section: Total ---
+    y -= lineHeight * 2;
+    drawText(`Total Amount:`, 350, y, 12, true);
+    drawText(`$${orderData.amount}`, 450, y, 12);
   }
 
   const pdfBytes = await pdfDoc.save();

@@ -19,6 +19,7 @@ const orderSchema = new mongoose.Schema({
   city: { type: String, required: true },
   country: { type: String, required: true },
   date: { type: Date, default: Date.now() },
+  contact: { type: String, required: true },
 });
 
 const orderModel =

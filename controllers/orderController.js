@@ -187,6 +187,9 @@ exports.placeOrder = async (req, res) => {
 
 exports.userOrder = async (req, res) => {
   try {
+    const { fromDate, toDate } = req.query;
+    console.log(fromDate, toDate);
+
     const { userId } = req.body;
 
     const user = await userModel.findById(userId);
@@ -194,20 +197,45 @@ exports.userOrder = async (req, res) => {
     if (!user) {
       return res.status(400).json({ message: "No user exists" });
     }
+    let data;
 
-    const data = await orderModel.aggregate([
-      { $match: { userId: userId } },
-      {
-        $facet: {
-          allData: [{ $sort: { date: -1 } }],
-          latestPdf: [
-            { $sort: { date: -1 } },
-            { $limit: 1 },
-            { $project: { pdfFile: "$pdfFileName", _id: 0 } },
-          ],
+    if (fromDate && toDate) {
+      data = await orderModel.aggregate([
+        {
+          $match: {
+            userId: userId,
+            date: {
+              $gte: new Date(fromDate),
+              $lte: new Date(toDate),
+            },
+          },
         },
-      },
-    ]);
+        {
+          $facet: {
+            allData: [{ $sort: { date: -1 } }],
+            latestPdf: [
+              { $sort: { date: -1 } },
+              { $limit: 1 },
+              { $project: { pdfFile: "$pdfFileName", _id: 0 } },
+            ],
+          },
+        },
+      ]);
+    } else {
+      data = await orderModel.aggregate([
+        { $match: { userId: userId } },
+        {
+          $facet: {
+            allData: [{ $sort: { date: -1 } }],
+            latestPdf: [
+              { $sort: { date: -1 } },
+              { $limit: 1 },
+              { $project: { pdfFile: "$pdfFileName", _id: 0 } },
+            ],
+          },
+        },
+      ]);
+    }
 
     return res.status(200).json({ success: true, data: data });
   } catch (error) {

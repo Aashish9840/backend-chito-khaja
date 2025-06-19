@@ -188,7 +188,9 @@ exports.placeOrder = async (req, res) => {
 exports.userOrder = async (req, res) => {
   try {
     const { fromDate, toDate } = req.query;
-    console.log(fromDate, toDate);
+    const startDate = new Date(fromDate);
+    const endDate = new Date(toDate);
+    endDate.setHours(23, 59, 59, 999);
 
     const { userId } = req.body;
 
@@ -199,14 +201,15 @@ exports.userOrder = async (req, res) => {
     }
     let data;
 
-    if (fromDate && toDate) {
+    if (fromDate !== "undefined" && toDate !== "undefined") {
+      console.log("hello");
       data = await orderModel.aggregate([
         {
           $match: {
             userId: userId,
             date: {
-              $gte: new Date(fromDate),
-              $lte: new Date(toDate),
+              $gte: startDate,
+              $lte: endDate,
             },
           },
         },
@@ -236,7 +239,6 @@ exports.userOrder = async (req, res) => {
         },
       ]);
     }
-
     return res.status(200).json({ success: true, data: data });
   } catch (error) {
     return res.status(400).json({ message: error.message });

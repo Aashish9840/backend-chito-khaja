@@ -25,9 +25,9 @@ exports.getPayment = async (req, res) => {
     let product_service_charge = 0;
     let product_delivery_charge = 0;
     let success_url =
-      "https://b3a7-2403-3800-323c-e09-4446-1181-ad01-490e.ngrok-free.app/api/payment/esewa/success";
+      "https://frontend-chito-khaja.vercel.app//api/payment/esewa/success";
     let failure_url =
-      "https://b3a7-2403-3800-323c-e09-4446-1181-ad01-490e.ngrok-free.app/api/payment/esewa/failure";
+      "https://frontend-chito-khaja.vercel.app//api/payment/esewa/failure";
     let secretKey = "8gBm/:&EnhH.1/q";
     let signature = generateSignature(
       `total_amount=${total_amount},transaction_uuid=${transaction_uuid},product_code=${product_code}`,

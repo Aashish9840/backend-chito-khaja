@@ -21,7 +21,10 @@ connectMongo();
 app.use(cookie_parser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors());
+app.use(cors({
+  origin:process.env.NODE_ENV==="production" ? "https://frontend-chito-khaja.vercel.app/":"http://localhost:3000",
+  credentials:true
+}));
 
 //api-end-point for food Model
 app.use("/api/food", foodRouter);

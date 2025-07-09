@@ -167,7 +167,12 @@ exports.adminLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await userModel.findOne({ email });
-    if (!user || (user.role !== "admin" && user.role !== "staff")) {
+      if (!user) {
+      return res
+        .status(400)
+        .json({ message: "Admin or Staff doesnot exist" });
+    }
+    if (user.role !== "admin" && user.role !== "staff") {
       return res
         .status(400)
         .json({ message: "Access denied: Admin and Stafft only allowed" });

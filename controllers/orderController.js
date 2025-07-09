@@ -7,6 +7,9 @@ const path = require("path");
 const pathDir = path.join(__dirname, "../orderPDFFiles");
 
 const generateOrderPdf = async (userId, orderData) => {
+    if (!fs.existsSync(pathDir)) {
+    fs.mkdirSync(pathDir, { recursive: true });
+  }
   const filePath = path.join(pathDir, `${userId}.pdf`);
   const pdfDoc = await PDFDocument.create();
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
